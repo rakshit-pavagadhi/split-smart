@@ -6,9 +6,8 @@ A full-stack expense management and settlement platform with optimized debt calc
 
 | Node.js | Express | React | MongoDB | Tailwind CSS |
 | :---: | :---: | :---: | :---: | :---: |
-| 18+ | 5.x | 19 | 7+ | 4.x |
+| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="50"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" width="50"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="50"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" width="50"/> | <img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" width="50"/> |
 
-**Hackathon / Project Showcase 2026**
 
 [Features](#-key-features) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [Project Structure](#-project-structure) • [API Reference](#-api-reference) • [Database](#-database-schema) • [Algorithm](#-min-cash-flow-algorithm) • [Security](#-security)
 
