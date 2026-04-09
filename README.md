@@ -565,11 +565,3 @@ By greedily pairing the largest outstanding debts with the largest outstanding c
 This project is open source and available under the [MIT License](LICENSE).
 
 ---
-
-<div align="center">
-
-Built with 💜 using Node.js, Express, React & MongoDB
-
-*If you found this helpful, consider giving it a ⭐*
-
-</div>
