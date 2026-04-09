@@ -1,25 +1,18 @@
-# 💸 SettleKar
+# 💸 SplitSmart
 
-> *Split expenses. Settle debts. Stay friends.*
+A full-stack expense management and settlement platform with optimized debt calculation, real-time balance tracking, and detailed financial analytics.
 
-A full-stack expense management and settlement platform with AI-powered receipt scanning, optimized debt calculation, real-time balance tracking, and integrated payments.
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk"/>
-  <img src="https://img.shields.io/badge/Spring_Boot-4.0-brightgreen?style=flat-square&logo=springboot"/>
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=flat-square&logo=postgresql"/>
-  <img src="https://img.shields.io/badge/AWS-S3_+_RDS-FF9900?style=flat-square&logo=amazonaws"/>
-  <img src="https://img.shields.io/badge/Razorpay-Payments-2563EB?style=flat-square"/>
-</p>
+| Node.js | Express | React | MongoDB | Tailwind CSS |
+| :---: | :---: | :---: | :---: | :---: |
+| 18+ | 5.x | 19 | 7+ | 4.x |
 
-<p align="center">
-  <strong>Anirveda Breach Hackathon 2026</strong>
-</p>
+**Hackathon / Project Showcase 2026**
 
----
+[Features](#-key-features) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [Project Structure](#-project-structure) • [API Reference](#-api-reference) • [Database](#-database-schema) • [Algorithm](#-min-cash-flow-algorithm) • [Security](#-security)
 
-[Features](#-key-features) • [Architecture](#-architecture) • [User Flow](#-user-flow) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [Project Structure](#-project-structure) • [API Reference](#-api-reference) • [Database](#-database-schema) • [Security](#-security)
+</div>
 
 ---
 
@@ -29,17 +22,12 @@ A full-stack expense management and settlement platform with AI-powered receipt 
 - Create groups (**Travel**, **Hostel**, **Event**, **Custom**) and invite members via join codes
 - Add expenses with **equal**, **percentage**, or **custom exact** splits
 - Real-time balance tracking with pairwise debt visualization
-- **Min-cash-flow algorithm** — minimizes the total number of transactions needed to settle all debts within a group
+- **Min-cash-flow algorithm** — minimizes the number of transactions needed to settle all debts
 
 ### 💳 Payments & Settlement
-- **Razorpay integration** for seamless in-app payments (UPI, cards, net banking)
-- Full settlement creation, tracking, and confirmation workflow
-- **Automated escalating reminders** — 3-day gentle nudge → 7-day formal email
-
-### 🧾 AI-Powered Receipt Scanner
-- Upload a receipt image → auto-extracts **description**, **amount**, and **category**
-- Powered by **PaddleOCR** running on a dedicated FastAPI microservice
-- Receipts stored on **AWS S3** with presigned URLs for secure, time-limited access
+- **Razorpay integration** for in-app payments (UPI, cards, net banking)
+- Settlement creation, tracking, and confirmation workflow
+- Supports multiple payment methods: `razorpay`, `upi`, `cash`, `bank_transfer`, `other`
 
 ### 📊 Analytics & Reporting
 - Category-wise spending breakdown (pie charts)
@@ -51,24 +39,27 @@ A full-stack expense management and settlement platform with AI-powered receipt 
 ### 🔒 Authentication & Security
 - Email/password signup with email verification
 - **Google OAuth2** login
-- Password reset flow with cryptographically secure tokens
-- **JWT-based** session management with auto-refresh
+- Password reset flow with secure tokens
+- JWT-based session management with auto-refresh
 
 ### 📧 Smart Notifications
-- HTML-styled transactional email templates (verification, welcome, settlement confirmation)
-- Escalating reminder system: gentle → formal → repeat
-- Monthly hostel group expense summaries
+- **HTML-styled** email templates (verification, welcome, settlement confirmation)
+- Password reset emails with expiring secure links
+- Settlement notification alerts
+
+### 🧾 Receipt Scanner
+- Upload a receipt image → auto-extracts description, amount, and category
+- Supports JPEG, PNG, WebP, and HEIC formats
+- 10 MB max file size with server-side validation
 
 ---
 
 ## 🏗 Architecture
 
-SettleKar follows a **3-tier microservice architecture**: a React SPA frontend, a Spring Boot REST backend, and an independent Python/FastAPI ML service for receipt scanning. All tiers communicate via REST APIs and share data through PostgreSQL (AWS RDS) and object storage (AWS S3).
-
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                    CLIENT (React SPA)                            │
-│  React 19 • Vite 7 • Tailwind CSS 4 • Framer Motion • Recharts  │
+│                         CLIENT (React SPA)                       │
+│  React 19 • Vite • Tailwind CSS v4 • Recharts • Glassmorphism   │
 │                                                                  │
 │   AuthContext ──► Axios Interceptors ──► Protected Routes        │
 │        │              │ (auto token refresh)                     │
@@ -76,77 +67,78 @@ SettleKar follows a **3-tier microservice architecture**: a React SPA frontend, 
 │   Login/Signup    Dashboard ──► Groups ──► [Expenses, Balances,  │
 │   (Google OAuth)                            Settlements,         │
 │                                             Analytics]           │
-└──────────┬───────────────────────────────────────────────────────┘
-           │  REST API  (JWT Bearer)
-           ▼
+└────────────────────────┬─────────────────────────────────────────┘
+                         │  REST API  (JWT Bearer)
+                         ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│               BACKEND (Spring Boot REST API)                     │
-│  Java 21 • Spring Boot 4.0 • Spring Security • Spring Data JPA  │
+│                       SERVER (Express.js)                        │
+│  Node.js • Express 5 • Joi Validation • Multer                  │
 │                                                                  │
-│   Auth ──► Groups ──► Expenses ──► Balances ──► Settlements      │
+│   Auth ──► Groups ──► Expenses ──► Balances ──► Settlements     │
 │    │                                   │                         │
 │    ▼                                   ▼                         │
-│  Google OAuth2                Min-Cash-Flow Algorithm            │
-│  JWT + Refresh                (Greedy O(n log n) optimizer)      │
+│  Google OAuth               Min-Cash-Flow Algorithm              │
+│  JWT + Refresh              (Greedy O(n log n) optimizer)        │
 │                                                                  │
-│   Razorpay Payments       Analytics (Aggregation Queries)        │
-│   Spring Mail (SMTP)      CSV Export                             │
-│   Spring Security         Centralized Error Handling             │
-└──────────┬──────────────────────────┬───────────────────────────┘
-           │                          │
-           ▼                          ▼
-┌──────────────────┐     ┌─────────────────────────────────────────┐
-│  ML MICROSERVICE │     │           DATABASE & STORAGE            │
-│  (FastAPI/Python)│     │                                         │
-│                  │     │  PostgreSQL 15+ (AWS RDS)               │
-│  PaddleOCR       │     │  Users ── Groups ── Expenses            │
-│  Receipt Parser  │     │                 └── Settlements          │
-│  :8000           │     │                                         │
-└──────────────────┘     │  AWS S3 (Receipt Images)                │
-                         │  Presigned URLs • Time-limited access   │
-                         └─────────────────────────────────────────┘
+│   Payments (Razorpay)    Analytics (Aggregation Pipelines)       │
+│   Receipt Scanner        Email Service (Nodemailer + SMTP)       │
+│   CSV Export             Error Handling Middleware                │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                      DATABASE (MongoDB)                          │
+│                                                                  │
+│   Users ──── Groups ──── Expenses ──── Settlements               │
+│   (bcrypt)  (inviteCode) (splits[])    (status workflow)         │
+│   (googleId) (members[])  (pre-save     (pending → completed     │
+│              (roles)       validation)    → rejected)            │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 🔄 User Flow
+### User Flow
 
 ```
 Sign Up / Login
       │
-      ├── New User? ──► Email Verification
-      │
-      ▼
-  Dashboard
-      │
-      ▼
-Create or Join Group
-      │
-      ▼
-  Add Expense
-      │
-      ├── Has Receipt? ──► Upload Receipt (AI Auto-Extract)
-      │                                │
-      └── No Receipt ──► Manual Entry  │
-                                       ▼
-                              Choose Split Method
-                         (Equal / Percentage / Custom)
-                                       │
-                                       ▼
-                           View Balances & Debts
-                         ┌──────────┼──────────┐
-                         ▼          ▼          ▼
-               Get Settlement   View        Export
-                Suggestions   Analytics     CSV
-                         │
-                         ▼
-                  Pay via Razorpay
-                         │
-                         ▼
-               Settlement Confirmed
-                         │
-                         ▼
-               Email Notification Sent
+      ├── New User? ──Yes──► Email Verification
+      │No                          │
+      └────────────────────────────┘
+                   ▼
+               Dashboard
+                   │
+                   ▼
+          Create or Join Group
+                   │
+                   ▼
+              Add Expense
+                   │
+                   ▼
+            Has Receipt?
+           /             \
+         Yes               No
+          │                 │
+    Upload Receipt      Manual Entry
+    (AI Auto-Extract)
+           \               /
+            ▼             ▼
+          Choose Split Method
+                   │
+                   ▼
+          View Balances & Debts
+         /          |          \
+        ▼           ▼           ▼
+  Get Settlement  View       Export
+   Suggestions  Analytics     CSV
+        │
+        ▼
+  Pay via Razorpay
+        │
+        ▼
+  Settlement Confirmed
+        │
+        ▼
+  Email Notification Sent
 ```
 
 ---
@@ -155,14 +147,14 @@ Create or Join Group
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Backend** | Java 21, Spring Boot 4.0, Spring Security, Spring Data JPA | REST API, business logic, authentication |
-| **Frontend** | React 19, Vite 7, Tailwind CSS 4, Framer Motion, Recharts | SPA with responsive UI and interactive charts |
-| **ML Service** | Python 3.10+, FastAPI, PaddleOCR, PaddlePaddle | AI-powered receipt scanning microservice |
-| **Database** | PostgreSQL 15+ (AWS RDS) | Persistent relational data storage |
+| **Backend** | Node.js, Express.js 5, Joi | REST API, business logic, request validation |
+| **Frontend** | React 19, Vite, Tailwind CSS v4, Recharts | SPA with responsive UI, interactive data charting |
+| **Database** | MongoDB, Mongoose | Persistent NoSQL data storage, schema modeling |
+| **Auth** | JWT, bcrypt.js, Google OAuth2 | Stateless authentication, password cryptography |
 | **Payments** | Razorpay Payment Gateway | UPI, cards, net banking |
-| **Storage** | AWS S3 | Receipt image storage with presigned URLs |
-| **Auth** | JWT + Google OAuth2 | Stateless authentication & social login |
-| **Email** | Spring Mail (Gmail SMTP) | Transactional emails & reminders |
+| **Email** | Nodemailer (SMTP) | Transactional emails & notifications |
+| **File Upload** | Multer | Receipt image uploads with validation |
+| **Validation** | Joi | Server-side request schema validation |
 
 ---
 
@@ -172,106 +164,169 @@ Create or Join Group
 
 | Tool | Version | Install |
 | :--- | :--- | :--- |
-| **Java** | 21 | `brew install openjdk@21` |
-| **Node.js** | 18+ | `brew install node` |
-| **Python** | 3.10+ | `brew install python` |
-| **PostgreSQL** | 15+ | `brew install postgresql@17` |
-| **Maven** | — | Bundled via `mvnw` wrapper |
+| **Node.js** | 18+ | [nodejs.org](https://nodejs.org) |
+| **MongoDB** | 7+ | [mongodb.com](https://www.mongodb.com/try/download) |
+| **Git** | Latest | [git-scm.com](https://git-scm.com) |
 
-### Setup
+---
 
-**1. Clone the repository**
+### 1. Clone the Repository
+
 ```bash
-git clone https://github.com/<your-username>/SettleKar.git
-cd SettleKar
+git clone https://github.com/<your-username>/SplitSmart.git
+cd SplitSmart
 ```
 
-**2. Create the database**
-```bash
-brew services start postgresql@17
-psql postgres -c "CREATE DATABASE settlekar_db;"
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/splitsmart
+JWT_SECRET=your_jwt_secret_key
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+CLIENT_URL=http://localhost:5173
+
+# Email (Nodemailer)
+EMAIL_HOST=smtp.ethereal.email
+EMAIL_PORT=587
+EMAIL_USER=
+EMAIL_PASS=
+
+# Razorpay
+RAZORPAY_KEY_ID=
+RAZORPAY_SECRET=
+
+# Google OAuth
+GOOGLE_CLIENT_ID=
+
+NODE_ENV=development
 ```
 
-> Update credentials in `Backend/src/main/resources/application.properties` if needed.
+> [!TIP]
+> **Google OAuth:** Obtain a Client ID from [Google Cloud Console](https://console.cloud.google.com/). Add `http://localhost:5173` as an authorized JavaScript origin.
 
-**3. Start all services (one command)**
+> [!TIP]
+> **Email in Development:** Works out-of-the-box using [Ethereal](https://ethereal.email/) test accounts — no real SMTP credentials needed. Preview URLs are logged to the console.
+
+---
+
+### 3. Install Dependencies & Seed Demo Data
+
 ```bash
-bash Documents/start-settlekar.sh
+# Backend
+cd server
+npm install
+node seed.js          # Seeds 5 demo users, 3 groups, 18 expenses
+
+# Frontend (open a new terminal)
+cd client
+npm install
 ```
 
-This launches:
+### 4. Start Development Servers
+
+```bash
+# Terminal 1 — Backend
+cd server
+npm run dev            # http://localhost:5000
+
+# Terminal 2 — Frontend
+cd client
+npm run dev            # http://localhost:5173
+```
 
 | Service | URL |
 | :--- | :--- |
-| ML Service | `http://localhost:8000` |
-| Backend API | `http://localhost:8080` |
 | Frontend | `http://localhost:5173` |
+| Backend API | `http://localhost:5000/api` |
+| Health Check | `http://localhost:5000/api/health` |
 
-Press `Ctrl+C` to stop all services.
+---
 
-<details>
-<summary><strong>Or start each service individually</strong></summary>
+### 5. Demo Credentials
 
-```bash
-# Terminal 1 — ML Service
-cd ML/receipt-scanner
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-
-# Terminal 2 — Backend
-cd Backend
-./mvnw spring-boot:run
-
-# Terminal 3 — Frontend
-cd Frontend/settlekar-frontend
-npm install
-npm run dev
-```
-
-</details>
-
-> [!TIP]
-> For Google OAuth, obtain a Client ID from [Google Cloud Console](https://console.cloud.google.com/). Configure your `application.properties` with the Client ID and allowed origins.
-
-> [!TIP]
-> For email, use a Gmail App Password (not your account password). Enable 2FA on your Google account, then generate one at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+| User | Email | Password |
+| :--- | :--- | :--- |
+| Amit Kumar | `amit@demo.com` | `demo123` |
+| Priya Sharma | `priya@demo.com` | `demo123` |
+| Rahul Verma | `rahul@demo.com` | `demo123` |
 
 ---
 
 ## 📂 Project Structure
 
 ```
-SettleKar/
-├── Backend/                                  # Spring Boot REST API
-│   └── src/main/java/com/settlekar/backend/
-│       ├── config/                           # Security, CORS, Razorpay config
-│       ├── controller/                       # REST controllers
-│       ├── dto/                              # Request/Response DTOs
-│       ├── entity/                           # JPA entities
-│       ├── enums/                            # ExpenseCategory, SplitMethod, etc.
-│       ├── repository/                       # Spring Data repositories
-│       └── service/                          # Business logic
+SplitSmart/
+├── client/                              # React + Vite SPA
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── balances/                # Balance summary & pairwise views
+│   │   │   ├── charts/                  # Recharts pie/bar chart wrappers
+│   │   │   ├── expenses/                # Expense list & add expense modal
+│   │   │   ├── groups/                  # Group cards & join/create modals
+│   │   │   ├── layout/                  # Navbar & page layout
+│   │   │   ├── settlements/             # Settlement suggestions & history
+│   │   │   └── ui/                      # Shared UI primitives
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx          # Global auth state + Google OAuth
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx            # Overview with stats & quick actions
+│   │   │   ├── Groups.jsx               # Group listing & management
+│   │   │   ├── GroupDetail.jsx          # Expenses, Balances, Settlements, Analytics
+│   │   │   ├── Login.jsx                # Email + Google login
+│   │   │   └── Signup.jsx               # Email + Google signup
+│   │   ├── services/
+│   │   │   └── api.js                   # Axios instance with interceptors
+│   │   ├── index.css                    # Global glassmorphism & Tailwind utilities
+│   │   └── main.jsx                     # App entry with GoogleOAuthProvider
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
 │
-├── Frontend/                                 # React + Vite SPA
-│   └── settlekar-frontend/
-│       └── src/
-│           ├── api/                          # Axios API clients
-│           ├── components/                   # Reusable UI components
-│           ├── contexts/                     # Auth context
-│           ├── hooks/                        # Custom React hooks
-│           ├── lib/                          # Utilities, formatters
-│           └── pages/                        # Route-level page components
+├── server/                              # Express.js REST API
+│   ├── config/
+│   │   └── db.js                        # MongoDB connection handler
+│   ├── controllers/
+│   │   ├── authController.js            # Signup, Login, Google OAuth, JWT refresh
+│   │   ├── groupController.js           # CRUD groups, join via invite code
+│   │   ├── expenseController.js         # CRUD expenses with split calculation
+│   │   ├── balanceController.js         # Net balances, pairwise debts, graph data
+│   │   ├── settlementController.js      # Create & manage settlements
+│   │   ├── analyticsController.js       # Category, monthly, member analytics + CSV
+│   │   ├── paymentController.js         # Razorpay order creation & verification
+│   │   └── receiptController.js         # Receipt image upload & parsing
+│   ├── middleware/
+│   │   ├── auth.js                      # JWT protection + group membership check
+│   │   ├── validate.js                  # Joi schema validation middleware
+│   │   └── errorHandler.js              # Centralized error formatting
+│   ├── models/
+│   │   ├── User.js                      # User schema with bcrypt & Google ID
+│   │   ├── Group.js                     # Group with members, roles, invite codes
+│   │   ├── Expense.js                   # Expense with splits & pre-save validation
+│   │   └── Settlement.js                # Settlement with status workflow
+│   ├── routes/
+│   │   ├── authRoutes.js                # /api/auth/*
+│   │   ├── groupRoutes.js               # /api/groups/*
+│   │   ├── expenseRoutes.js             # /api/groups/:id/expenses/*
+│   │   ├── balanceRoutes.js             # /api/groups/:id/balances/*
+│   │   ├── settlementRoutes.js          # /api/groups/:id/settlements/*
+│   │   ├── analyticsRoutes.js           # /api/groups/:id/analytics/*
+│   │   ├── exportRoutes.js              # /api/groups/:id/export/*
+│   │   ├── paymentRoutes.js             # /api/payments/*
+│   │   └── receiptRoutes.js             # /api/receipts/*
+│   ├── services/
+│   │   ├── emailService.js              # Nodemailer with HTML templates
+│   │   └── settlementService.js         # Min-Cash-Flow algorithm engine
+│   ├── seed.js                          # Demo data generator
+│   ├── server.js                        # App bootstrap & middleware setup
+│   └── package.json
 │
-├── ML/                                       # Python ML microservice
-│   └── receipt-scanner/
-│       └── app/
-│           ├── main.py                       # FastAPI app entry
-│           ├── ocr_engine.py                 # PaddleOCR wrapper
-│           └── receipt_parser.py             # Post-processing & extraction
-│
-└── Documents/
-    ├── start-settlekar.sh                    # Start all 3 services
-    └── cleanup_db.sh                         # Reset database
+├── docs/
+│   └── screenshots/                     # Product screenshots for README
+├── .env                                 # Environment variables (git-ignored)
+└── README.md
 ```
 
 ---
@@ -281,7 +336,7 @@ SettleKar/
 All endpoints are prefixed with `/api`. Protected routes require a `Bearer` token in the `Authorization` header.
 
 <details>
-<summary><strong>Auth</strong></summary>
+<summary><strong>🔐 Auth</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
@@ -297,7 +352,7 @@ All endpoints are prefixed with `/api`. Protected routes require a `Bearer` toke
 </details>
 
 <details>
-<summary><strong>Groups</strong></summary>
+<summary><strong>👥 Groups</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
@@ -312,7 +367,7 @@ All endpoints are prefixed with `/api`. Protected routes require a `Bearer` toke
 </details>
 
 <details>
-<summary><strong>Expenses</strong></summary>
+<summary><strong>💸 Expenses</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
@@ -324,7 +379,7 @@ All endpoints are prefixed with `/api`. Protected routes require a `Bearer` toke
 </details>
 
 <details>
-<summary><strong>Balances & Settlements</strong></summary>
+<summary><strong>⚖️ Balances & Settlements</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
@@ -339,28 +394,28 @@ All endpoints are prefixed with `/api`. Protected routes require a `Bearer` toke
 </details>
 
 <details>
-<summary><strong>Payments</strong></summary>
+<summary><strong>💳 Payments</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
 | `POST` | `/payments/create-order` | Create Razorpay order | ✓ |
-| `POST` | `/payments/verify` | Verify Razorpay payment (HMAC SHA256) | ✓ |
+| `POST` | `/payments/verify` | Verify Razorpay payment | ✓ |
 
 </details>
 
 <details>
-<summary><strong>Receipt Scanner</strong></summary>
+<summary><strong>🧾 Receipt Scanner</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
 | `POST` | `/receipts/scan` | Upload & parse receipt image | ✓ |
 
-> Accepts `multipart/form-data` with a `receipt` field. Supported formats: JPEG, PNG, WebP. Max size: 10MB. Image is stored in AWS S3; the parsed result (description, amount, category) is returned in the response.
+> Accepts `multipart/form-data` with a `receipt` field. Supported formats: **JPEG, PNG, WebP, HEIC**. Max size: **10 MB**.
 
 </details>
 
 <details>
-<summary><strong>Analytics & Export</strong></summary>
+<summary><strong>📊 Analytics & Export</strong></summary>
 
 | Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :---: |
@@ -375,97 +430,107 @@ All endpoints are prefixed with `/api`. Protected routes require a `Bearer` toke
 
 ## 🗄 Database Schema
 
-```
-USER
-─────────────────────────────
-id            UUID (PK)
-name          VARCHAR
-email         VARCHAR (unique)
-password      VARCHAR (BCrypt)
-avatar        VARCHAR
-google_id     VARCHAR
-is_verified   BOOLEAN
-created_at    TIMESTAMP
+```mermaid
+erDiagram
+    USER {
+        ObjectId _id
+        String name
+        String email
+        String password
+        String avatar
+        String googleId
+        Boolean isVerified
+        Date createdAt
+    }
 
-GROUP
-─────────────────────────────
-id            UUID (PK)
-name          VARCHAR
-type          ENUM (Travel, Hostel, Event, Custom)
-description   TEXT
-invite_code   VARCHAR (unique)
-created_by    UUID (FK → User)
-is_active     BOOLEAN
-created_at    TIMESTAMP
+    GROUP {
+        ObjectId _id
+        String name
+        String type
+        String description
+        String inviteCode
+        ObjectId createdBy
+        Boolean isActive
+        Date createdAt
+    }
 
-EXPENSE
-─────────────────────────────
-id            UUID (PK)
-group_id      UUID (FK → Group)
-description   VARCHAR
-amount        DECIMAL
-category      ENUM
-paid_by       UUID (FK → User)
-split_type    ENUM (Equal, Percentage, Custom)
-date          DATE
-created_by    UUID (FK → User)
+    EXPENSE {
+        ObjectId _id
+        ObjectId group
+        String description
+        Number amount
+        String category
+        ObjectId paidBy
+        String splitType
+        Date date
+        ObjectId createdBy
+    }
 
-EXPENSE_SPLIT  (embedded per expense)
-─────────────────────────────
-expense_id    UUID (FK → Expense)
-user_id       UUID (FK → User)
-amount        DECIMAL
+    SETTLEMENT {
+        ObjectId _id
+        ObjectId group
+        ObjectId from
+        ObjectId to
+        Number amount
+        String status
+        String paymentMethod
+        String paymentId
+        Date createdAt
+        Date completedAt
+    }
 
-SETTLEMENT
-─────────────────────────────
-id            UUID (PK)
-group_id      UUID (FK → Group)
-from_user     UUID (FK → User)
-to_user       UUID (FK → User)
-amount        DECIMAL
-status        ENUM (pending → completed → rejected)
-payment_method ENUM (razorpay, upi, cash, bank_transfer, other)
-payment_id    VARCHAR
-created_at    TIMESTAMP
-completed_at  TIMESTAMP
+    USER ||--o{ GROUP : "creates"
+    USER }o--o{ GROUP : "member of"
+    GROUP ||--o{ EXPENSE : "contains"
+    USER ||--o{ EXPENSE : "paid by"
+    GROUP ||--o{ SETTLEMENT : "settles"
+    USER ||--o{ SETTLEMENT : "from/to"
 ```
 
 ### Key Relationships
 
-| Relation | Type | Notes |
+| Relation | Type | Description |
 | :--- | :--- | :--- |
 | User → Group | One-to-Many | A user can create multiple groups |
-| Group ↔ User | Many-to-Many | Members table with `admin` / `member` roles |
-| Group → Expense | One-to-Many | Each group tracks multiple expenses |
-| Expense → Splits | One-to-Many | Per-user split amounts stored in `ExpenseSplit` |
+| Group → Members | Many-to-Many | Groups have multiple members with roles (`admin` / `member`) |
+| Group → Expense | One-to-Many | Each group has multiple expenses |
+| Expense → Splits | Embedded Array | Each expense contains split amounts per user |
 | Group → Settlement | One-to-Many | Settlements track debt repayments between members |
+
+### Data Integrity
+
+- **Expense pre-save hook** — validates that split amounts sum to the total expense amount (tolerance: ₹0.01)
+- **Password hashing** — bcrypt with 12 salt rounds on every `User.save()`
+- **Invite codes** — auto-generated UUID v4 short codes, unique per group
 
 ---
 
 ## 🔐 Min-Cash-Flow Algorithm
 
-The settlement optimization engine uses a **greedy algorithm** to minimize the total number of transactions required to settle all debts within a group. Rather than having every pair of users settle directly, this algorithm routes payments through a reduced set of optimized transfers.
+The settlement optimization engine uses a **greedy algorithm** to minimize the total number of transactions required to settle all debts within a group.
 
 ```
-Complexity: O(n log n) — dominated by the sorting step
+Complexity: O(n log n) — dominated by sorting step
 
 Steps:
-  1. Calculate net balance for each member (total paid − total owed)
-  2. Separate members into two lists: creditors (+balance) and debtors (−balance)
-  3. Sort both lists by absolute amount (descending)
-  4. Greedy match: pair the largest debtor with the largest creditor
-  5. Settle the minimum of the two amounts; carry forward any remainder
-  6. Repeat until all balances reach zero
+1. Calculate net balance for each member (credits − debits)
+2. Separate into creditors (+balance) and debtors (−balance)
+3. Sort both lists by amount (descending)
+4. Greedy match: pair largest debtor with largest creditor
+5. Settle the minimum of the two amounts
+6. Repeat until all balances reach zero
 ```
 
-**Example — 4 members, 4 transactions reduced to 2:**
+**Example:**
 
 | Before Optimization | After Optimization |
 | :--- | :--- |
 | A → B: ₹500 | A → C: ₹300 |
 | A → C: ₹300 | B → C: ₹200 |
 | B → C: ₹200 | |
-| B → A: ₹500 | **2 transactions instead of 4** |
+| B → A: ₹500 | **2 transactions saved** |
+
+By greedily pairing the largest outstanding debts with the largest outstanding credits, the algorithm converges to a minimal transaction set — producing the optimal solution for most real-world group sizes.
 
 ---
 
@@ -473,19 +538,26 @@ Steps:
 
 | Concern | Implementation |
 | :--- | :--- |
-| **Authentication** | JWT access tokens + Google OAuth2 |
-| **Password Storage** | BCrypt hashing (never stored as plaintext) |
-| **API Protection** | Spring Security filters on all protected endpoints |
-| **Payment Verification** | Razorpay signature verification (HMAC SHA256) |
-| **File Access** | AWS S3 presigned URLs (time-limited) |
-| **Email Tokens** | Cryptographically random, single-use, time-expiring |
-| **CORS** | Whitelisted origins only |
+| **Authentication** | JWT access tokens (1d) + refresh tokens (7d) + Google OAuth2 |
+| **Password Storage** | bcrypt hashing with 12 salt rounds — plaintext never stored |
+| **API Protection** | Express middleware intercepting missing or tampered tokens |
+| **Group Authorization** | `groupMember` middleware verifying membership before any data access |
+| **Input Validation** | Joi schemas on all mutating endpoints (signup, login, expenses, settlements) |
+| **Data Integrity** | Mongoose pre-save hooks rejecting mathematically invalid expense splits |
+| **Token Refresh** | Transparent Axios interceptors auto-refreshing expired access tokens |
+| **Email Tokens** | Cryptographically random, single-use, time-expiring (24h verify / 1h reset) |
+| **CORS** | Whitelisted origins only (`CLIENT_URL` environment variable) |
+| **File Uploads** | MIME type filtering + 10 MB size limits enforced via Multer |
 
 ---
 
-## 👥 Team
+## 🤝 Contributing
 
-Built with 💜 by **Team Mission ImCodeable** for the **Anirveda Breach Hackathon 2026**.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
 ---
 
@@ -495,6 +567,10 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-<p align="center">
-  <sub>If you found this helpful, consider giving it a ⭐</sub>
-</p>
+<div align="center">
+
+Built with 💜 using Node.js, Express, React & MongoDB
+
+*If you found this helpful, consider giving it a ⭐*
+
+</div>
