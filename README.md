@@ -147,6 +147,7 @@ Sign Up / Login
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
 | **Backend** | Node.js, Express.js 5, Joi | REST API, business logic, request validation |
+| **ML Service** | Python 3.12, FastAPI, PaddleOCR | AI-powered receipt data extraction microservice |
 | **Frontend** | React 19, Vite, Tailwind CSS v4, Recharts | SPA with responsive UI, interactive data charting |
 | **Database** | MongoDB, Mongoose | Persistent NoSQL data storage, schema modeling |
 | **Auth** | JWT, bcrypt.js, Google OAuth2 | Stateless authentication, password cryptography |
@@ -164,6 +165,7 @@ Sign Up / Login
 | Tool | Version | Install |
 | :--- | :--- | :--- |
 | **Node.js** | 18+ | [nodejs.org](https://nodejs.org) |
+| **Python** | 3.12+ | [python.org](https://www.python.org/) |
 | **MongoDB** | 7+ | [mongodb.com](https://www.mongodb.com/try/download) |
 | **Git** | Latest | [git-scm.com](https://git-scm.com) |
 
@@ -219,8 +221,14 @@ cd server
 npm install
 node seed.js          # Seeds 5 demo users, 3 groups, 18 expenses
 
+# ML Receipt Scanner (Python Service)
+cd ../ML/receipt-scanner
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
 # Frontend (open a new terminal)
-cd client
+cd ../../client
 npm install
 ```
 
@@ -231,7 +239,12 @@ npm install
 cd server
 npm run dev            # http://localhost:5000
 
-# Terminal 2 — Frontend
+# Terminal 2 — ML Scanner (Python)
+cd ML/receipt-scanner
+.venv\Scripts\activate
+uvicorn app.main:app --reload  # http://localhost:8000
+
+# Terminal 3 — Frontend
 cd client
 npm run dev            # http://localhost:5173
 ```
@@ -240,6 +253,7 @@ npm run dev            # http://localhost:5173
 | :--- | :--- |
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:5000/api` |
+| ML Scanner API | `http://localhost:8000` |
 | Health Check | `http://localhost:5000/api/health` |
 
 ---
@@ -283,6 +297,15 @@ SplitSmart/
 │   ├── index.html
 │   ├── vite.config.js
 │   └── package.json
+│
+├── ML/                                  # Machine Learning Microservices
+│   └── receipt-scanner/                 # Python/FastAPI OCR service
+│       ├── app/
+│       │   ├── routers/                 # API endpoints for scanning
+│       │   ├── services/                # PaddleOCR & extraction logic
+│       │   └── schemas/                 # Pydantic request/response models
+│       ├── main.py                      # FastAPI entry point
+│       └── requirements.txt             # Python dependencies
 │
 ├── server/                              # Express.js REST API
 │   ├── config/
