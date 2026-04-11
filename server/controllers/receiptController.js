@@ -1,38 +1,50 @@
-// Simple receipt scanner - extracts data using pattern matching
-// In production, replace with PaddleOCR or Tesseract.js
+// External call to PaddleOCR microservice
 
-// @desc   Scan receipt (mock OCR)
+// @desc   Scan receipt via ML microservice
 // @route  POST /api/receipts/scan
 exports.scanReceipt = async (req, res, next) => {
   try {
-    // In a real implementation, we'd process the uploaded image with OCR
-    // For demo, we return a simulated extraction
-
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload a receipt image' });
     }
 
-    // Simulate OCR processing delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Create FormData to send to the Python microservice
+      const formData = new FormData();
+      const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
+      formData.append('file', blob, req.file.originalname);
 
-    // Mock extracted data
-    const categories = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Utilities', 'Medical'];
-    const stores = ['SuperMart', 'CafeZone', 'QuickBite', 'TravelExpress', 'ShopMore'];
+      // Call the local FastAPI ML Service
+      const mlResponse = await fetch('http://127.0.0.1:8000/api/scan-receipt', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const mockResult = {
-      description: stores[Math.floor(Math.random() * stores.length)],
-      amount: Math.round((Math.random() * 1000 + 50) * 100) / 100,
-      category: categories[Math.floor(Math.random() * categories.length)],
-      confidence: 0.85 + Math.random() * 0.15,
-      rawText: 'Mock OCR text extraction - In production, PaddleOCR would extract actual text',
-      processingTimeMs: 1500
-    };
+      if (!mlResponse.ok) {
+        throw new Error(`ML Service responded with status: ${mlResponse.status}`);
+      }
 
-    res.json({
-      success: true,
-      data: mockResult,
-      message: 'Receipt scanned successfully (demo mode)'
-    });
+      const mlResult = await mlResponse.json();
+
+      if (!mlResult.success) {
+        throw new Error(mlResult.error || 'Failed to parse receipt');
+      }
+
+      res.json({
+        success: true,
+        data: {
+          description: mlResult.data.description,
+          amount: mlResult.data.amount,
+          category: mlResult.data.category,
+          confidence: 0.95,
+          rawText: mlResult.raw_ocr_text,
+        },
+        message: 'Receipt scanned successfully'
+      });
+    } catch (mlError) {
+      console.error('ML Service Error:', mlError);
+      return res.status(500).json({ message: mlError.message || 'Receipt extraction failed. Is the ML service running on port 8000?' });
+    }
   } catch (error) {
     next(error);
   }

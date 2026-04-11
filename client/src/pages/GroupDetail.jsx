@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { groupsAPI, expensesAPI, balancesAPI, settlementsAPI, analyticsAPI, paymentsAPI } from '../services/api';
+import { groupsAPI, expensesAPI, balancesAPI, settlementsAPI, analyticsAPI, paymentsAPI, receiptAPI } from '../services/api';
 import Navbar from '../components/layout/Navbar';
 import { formatCurrency, formatDate, timeAgo, categoryConfig, groupTypeConfig, getInitials, getAvatarColor } from '../utils/helpers';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -26,6 +26,7 @@ const GroupDetail = () => {
   const [memberData, setMemberData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Add expense form
   const [expForm, setExpForm] = useState({
@@ -130,6 +131,35 @@ const GroupDetail = () => {
       fetchGroupData();
     } catch (err) {
       toast.error('Failed to delete expense');
+    }
+  };
+
+  const handleReceiptUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    const toastId = toast.loading('Scanning receipt... 📸');
+    
+    const formData = new FormData();
+    formData.append('receipt', file);
+
+    try {
+      const res = await receiptAPI.scan(formData);
+      const { description, amount, category } = res.data.data;
+      
+      setExpForm(prev => ({
+        ...prev,
+        description: description || prev.description,
+        amount: amount || prev.amount,
+        category: category || prev.category
+      }));
+      toast.success('Receipt data extracted!', { id: toastId });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to scan receipt', { id: toastId });
+    } finally {
+      setIsScanning(false);
+      e.target.value = '';
     }
   };
 
@@ -757,6 +787,26 @@ const GroupDetail = () => {
             </div>
 
             <form onSubmit={handleAddExpense} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              
+              {/* Receipt Scanner UI */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.06))',
+                border: '1px dashed rgba(99,102,241,0.3)',
+                borderRadius: '12px', padding: '16px', textAlign: 'center', cursor: 'pointer'
+              }}>
+                <input type="file" id="receipt-upload" accept="image/jpeg, image/png, image/webp" 
+                       style={{ display: 'none' }} onChange={handleReceiptUpload} disabled={isScanning} />
+                <label htmlFor="receipt-upload" style={{ cursor: isScanning ? 'wait' : 'pointer', display: 'block' }}>
+                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>🧾</div>
+                  <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0', marginBottom: '4px' }}>
+                    {isScanning ? 'Scanning with AI...' : 'Smart Receipt Scanner'}
+                  </h3>
+                  <p style={{ fontSize: '12px', color: '#64748b' }}>
+                    {isScanning ? 'Extracting details, please wait...' : 'Upload a photo of your bill to auto-fill details'}
+                  </p>
+                </label>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94a3b8', marginBottom: '6px' }}>
                   Description

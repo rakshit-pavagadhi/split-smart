@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+paddlepaddle==2.6.2
+paddleocr==2.7.3
+httpx
+Pillow
+numpy<2.0.0
+pydantic
+python-multipart
