@@ -7,6 +7,10 @@ node_modules/
 # Python virtual environment
 .venv/
 
+# Python cache (VERY IMPORTANT)
+__pycache__/
+*.pyc
+
 # Logs
 *.log
 
